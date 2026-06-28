@@ -6,19 +6,47 @@ import TripDetail from './components/TripDetail';
 import AdminPanel from './components/AdminPanel';
 import { INITIAL_TRIPS } from './data/mockTrips';
 import { Trip } from './types/travel';
-import { Compass, RefreshCw, Star, ShieldCheck, Mail, ShieldAlert, BadgeInfo } from 'lucide-react';
+import { Compass, RefreshCw, Star, ShieldCheck, Mail, ShieldAlert, BadgeInfo, Lock, Eye, EyeOff } from 'lucide-react';
 
 const STORAGE_KEY = 'viaja_trips_data';
+const ADMIN_PASSWORD = 'Grupo2026*adn';
 
 export default function App() {
   const [trips, setTrips] = useState<Trip[]>([]);
   const [isAdminMode, setIsAdminMode] = useState<boolean>(false);
+  const [isAdminAuthenticated, setIsAdminAuthenticated] = useState<boolean>(false);
   const [selectedTrip, setSelectedTrip] = useState<Trip | null>(null);
+
+  // Password modal states
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const [passwordInput, setPasswordInput] = useState('');
+  const [passwordError, setPasswordError] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   // Filter States
   const [departureCity, setDepartureCity] = useState<string>('');
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [selectedCategory, setSelectedCategory] = useState<string>('');
+
+  // Detect /admin route
+  useEffect(() => {
+    const checkAdminRoute = () => {
+      const path = window.location.pathname;
+      if (path === '/admin' || path === '/admin/') {
+        if (!isAdminAuthenticated) {
+          setShowPasswordModal(true);
+        } else {
+          setIsAdminMode(true);
+        }
+      } else {
+        setIsAdminMode(false);
+      }
+    };
+
+    checkAdminRoute();
+    window.addEventListener('popstate', checkAdminRoute);
+    return () => window.removeEventListener('popstate', checkAdminRoute);
+  }, [isAdminAuthenticated]);
 
   // Read from localStorage on mount
   useEffect(() => {
@@ -26,7 +54,7 @@ export default function App() {
     if (saved) {
       try {
         setTrips(JSON.parse(saved));
-      } catch (e) {
+      } catch {
         setTrips(INITIAL_TRIPS);
       }
     } else {
@@ -50,8 +78,6 @@ export default function App() {
   const handleUpdateTrip = (updatedTrip: Trip) => {
     const updated = trips.map((t) => (t.id === updatedTrip.id ? updatedTrip : t));
     syncTrips(updated);
-    
-    // Sync active detail view if open
     if (selectedTrip?.id === updatedTrip.id) {
       setSelectedTrip(updatedTrip);
     }
@@ -72,18 +98,53 @@ export default function App() {
     }
   };
 
-  // Booking success handler (traveler perspective booking block)
+  // Booking success handler
   const handleBookSuccess = (seatsToBlock: number[]) => {
     if (!selectedTrip) return;
-    
-    // Block these seats on the actual trip
     const updatedBlocked = Array.from(new Set([...selectedTrip.blockedSeats, ...seatsToBlock]));
     const updatedTrip = { ...selectedTrip, blockedSeats: updatedBlocked };
-    
     handleUpdateTrip(updatedTrip);
   };
 
-  // Extract unique departure cities and categories from our trips list
+  // Password submit handler
+  const handlePasswordSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (passwordInput === ADMIN_PASSWORD) {
+      setIsAdminAuthenticated(true);
+      setIsAdminMode(true);
+      setShowPasswordModal(false);
+      setPasswordInput('');
+      setPasswordError(false);
+    } else {
+      setPasswordError(true);
+      setPasswordInput('');
+    }
+  };
+
+  // Exit admin mode
+  const handleExitAdmin = () => {
+    setIsAdminMode(false);
+    setSelectedTrip(null);
+    // Change URL back to root without reload
+    window.history.pushState({}, '', '/');
+  };
+
+  // Logo click
+  const handleLogoClick = () => {
+    setIsAdminMode(false);
+    setSelectedTrip(null);
+    window.history.pushState({}, '', '/');
+  };
+
+  // Cancel password modal
+  const handleCancelPassword = () => {
+    setShowPasswordModal(false);
+    setPasswordInput('');
+    setPasswordError(false);
+    window.history.pushState({}, '', '/');
+  };
+
+  // Extract unique departure cities and categories
   const uniqueCities = Array.from(new Set(trips.map((t) => t.departureCity)));
   const uniqueCategories = Array.from(new Set(trips.map((t) => t.category)));
 
@@ -99,10 +160,8 @@ export default function App() {
         : true;
       return matchCity && matchCategory && matchSearch;
     })
-    // Sort: Chronologically (soonest departure date first)
     .sort((a, b) => new Date(a.departureDate).getTime() - new Date(b.departureDate).getTime());
 
-  // Reset filters helper
   const handleResetFilters = () => {
     setDepartureCity('');
     setSearchQuery('');
@@ -111,22 +170,87 @@ export default function App() {
 
   return (
     <div className="flex min-h-screen flex-col bg-slate-50 text-slate-800 antialiased font-sans">
+      {/* Password Modal */}
+      {showPasswordModal && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/70 p-4 backdrop-blur-sm">
+          <div className="w-full max-w-sm rounded-3xl border border-slate-100 bg-white p-8 shadow-2xl">
+            <div className="text-center">
+              <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-600">
+                <Lock className="h-7 w-7" />
+              </div>
+              <h3 className="mt-5 text-xl font-black text-slate-900">Acceso Restringido</h3>
+              <p className="mt-2 text-sm text-slate-500">
+                Esta área es exclusiva para administradores autorizados. Ingresa la contraseña para continuar.
+              </p>
+            </div>
+
+            <form onSubmit={handlePasswordSubmit} className="mt-8 space-y-4">
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">
+                  Contraseña de Administrador
+                </label>
+                <div className="relative">
+                  <input
+                    type={showPassword ? 'text' : 'password'}
+                    value={passwordInput}
+                    onChange={(e) => {
+                      setPasswordInput(e.target.value);
+                      setPasswordError(false);
+                    }}
+                    placeholder="Escribe tu contraseña..."
+                    autoFocus
+                    className={`w-full rounded-xl border px-4 py-3 pr-12 text-sm font-medium focus:outline-none transition ${
+                      passwordError
+                        ? 'border-rose-300 bg-rose-50 text-rose-800 focus:border-rose-500'
+                        : 'border-slate-200 bg-white text-slate-900 focus:border-emerald-500'
+                    }`}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                  >
+                    {showPassword ? <EyeOff className="h-4.5 w-4.5" /> : <Eye className="h-4.5 w-4.5" />}
+                  </button>
+                </div>
+
+                {passwordError && (
+                  <p className="mt-2 flex items-center gap-1.5 text-xs font-bold text-rose-500">
+                    <ShieldAlert className="h-3.5 w-3.5" />
+                    Contraseña incorrecta. Intenta de nuevo.
+                  </p>
+                )}
+              </div>
+
+              <button
+                type="submit"
+                className="w-full rounded-xl bg-emerald-600 py-3 text-sm font-bold text-white shadow-lg shadow-emerald-100 transition hover:bg-emerald-700 active:scale-[0.98]"
+              >
+                Ingresar al Panel
+              </button>
+
+              <button
+                type="button"
+                onClick={handleCancelPassword}
+                className="w-full rounded-xl border border-slate-200 bg-white py-2.5 text-xs font-bold text-slate-500 transition hover:bg-slate-50"
+              >
+                Cancelar y volver al catálogo
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
+
       {/* Top Navbar */}
       <Navbar
         isAdminMode={isAdminMode}
-        onToggleAdminMode={() => {
-          setIsAdminMode(!isAdminMode);
-          setSelectedTrip(null); // Return to list view
-        }}
-        onLogoClick={() => {
-          setIsAdminMode(false);
-          setSelectedTrip(null);
-        }}
+        onExitAdminMode={handleExitAdmin}
+        onLogoClick={handleLogoClick}
       />
 
       {/* Main Container */}
       <main className="flex-1">
-        {isAdminMode ? (
+        {isAdminMode && isAdminAuthenticated ? (
           /* ADMIN MODE VIEW */
           <AdminPanel
             trips={trips}
@@ -170,7 +294,6 @@ export default function App() {
                   </p>
                 </div>
 
-                {/* Filter info indicator */}
                 {(departureCity || selectedCategory || searchQuery) && (
                   <button
                     onClick={handleResetFilters}
@@ -182,7 +305,6 @@ export default function App() {
                 )}
               </div>
 
-              {/* Grid content */}
               {filteredTrips.length > 0 ? (
                 <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
                   {filteredTrips.map((trip) => (
@@ -194,7 +316,6 @@ export default function App() {
                   ))}
                 </div>
               ) : (
-                /* Empty placeholder state */
                 <div className="mt-12 rounded-3xl border border-dashed border-slate-200 bg-white p-12 text-center max-w-md mx-auto">
                   <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-50 text-slate-400">
                     🔍
