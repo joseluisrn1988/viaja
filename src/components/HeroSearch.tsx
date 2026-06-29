@@ -35,8 +35,8 @@ export default function HeroSearch({
             🚀 Evita estafas en internet • Catálogo Curado y Verificado
           </span>
           <h1 className="mt-6 text-4xl font-extrabold tracking-tight text-white sm:text-5xl lg:text-6xl">
-            A la gente no le gusta que <span className="text-emerald-400">le vendan</span>,<br className="hidden sm:inline" />
-            le gusta <span className="underline decoration-emerald-400 decoration-wavy underline-offset-8">comprar</span>.
+            Viaja tranquilo. <span className="text-emerald-400">Agencias verificadas, </span>,<br className="hidden sm:inline" />
+             precios reales, <span className="underline decoration-emerald-400 decoration-wavy underline-offset-8">lugares garantizados.</span>.
           </h1>
           <p className="mx-auto mt-6 max-w-2xl text-lg text-slate-300">
             Encuentra viajes, tours y escapadas de fin de semana con salida desde tu ciudad de origen. Reserva con confianza y coordina directo con operadores verificados.
