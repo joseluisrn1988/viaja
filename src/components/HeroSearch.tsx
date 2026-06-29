@@ -35,7 +35,7 @@ export default function HeroSearch({
             🚀 Evita estafas en internet • Catálogo Curado y Verificado
           </span>
           <h1 className="mt-6 text-4xl font-extrabold tracking-tight text-white sm:text-5xl lg:text-6xl">
-            Viaja tranquilo. <span className="text-emerald-400">Agencias verificadas, </span>,<br className="hidden sm:inline" />
+            Viaja tranquilo, <span className="text-emerald-400">Agencias verificadas </span>,<br className="hidden sm:inline" />
              precios reales, <span className="underline decoration-emerald-400 decoration-wavy underline-offset-8">lugares garantizados.</span>.
           </h1>
           <p className="mx-auto mt-6 max-w-2xl text-lg text-slate-300">
