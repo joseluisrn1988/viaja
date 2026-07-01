@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import Navbar from './components/Navbar';
 import HeroSearch from './components/HeroSearch';
 import TripCard from './components/TripCard';
+import TripSection from './components/TripSection';
 import TripDetail from './components/TripDetail';
 import AdminPanel from './components/AdminPanel';
 import { INITIAL_TRIPS } from './data/mockTrips';
@@ -162,6 +163,39 @@ export default function App() {
     })
     .sort((a, b) => new Date(a.departureDate).getTime() - new Date(b.departureDate).getTime());
 
+  // Are any filters/search active?
+  const hasActiveFilters = Boolean(departureCity || selectedCategory || searchQuery);
+
+  // All trips sorted by soonest departure date
+  const tripsByDate = [...trips].sort(
+    (a, b) => new Date(a.departureDate).getTime() - new Date(b.departureDate).getTime()
+  );
+
+  // "Salidas más próximas" — the 10 soonest
+  const upcomingTrips = tripsByDate.slice(0, 10);
+
+  // Category sections config with friendly titles
+  const CATEGORY_META: Record<string, { title: string; subtitle: string; emoji: string }> = {
+    'Playa': { title: 'Viajes a la playa', subtitle: 'Sol, arena y mar para desconectarte.', emoji: '🏖️' },
+    'Naturaleza': { title: 'Naturaleza y aventura', subtitle: 'Cascadas, grutas y paisajes increíbles.', emoji: '🌿' },
+    'Pueblo Mágico': { title: 'Pueblos Mágicos', subtitle: 'Tradición, cultura y encanto mexicano.', emoji: '✨' },
+    'Aventura': { title: 'Pura adrenalina', subtitle: 'Para los que buscan emociones extremas.', emoji: '🧗' },
+    'Cultural': { title: 'Experiencias culturales', subtitle: 'Historia, arte y gastronomía.', emoji: '🏛️' },
+    'Fin de Semana': { title: 'Escapadas de fin de semana', subtitle: 'Perfectas para desconectar sin pedir vacaciones.', emoji: '🗓️' },
+  };
+
+  // Build one section per category that has trips
+  const categorySections = uniqueCategories.map((cat) => {
+    const meta = CATEGORY_META[cat] || { title: cat, subtitle: '', emoji: '📍' };
+    return {
+      category: cat,
+      title: meta.title,
+      subtitle: meta.subtitle,
+      emoji: meta.emoji,
+      trips: tripsByDate.filter((t) => t.category === cat),
+    };
+  });
+
   const handleResetFilters = () => {
     setDepartureCity('');
     setSearchQuery('');
@@ -268,7 +302,7 @@ export default function App() {
           />
         ) : (
           /* TRAVELER CATALOG VIEW */
-          <div className="space-y-12">
+          <div>
             {/* Hero Search Engine & Header */}
             <HeroSearch
               departureCity={departureCity}
@@ -281,58 +315,76 @@ export default function App() {
               categories={uniqueCategories}
             />
 
-            {/* Catalog Grid */}
-            <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pb-24">
-              <div className="flex flex-col md:flex-row md:items-center md:justify-between border-b border-slate-100 pb-5 gap-3.5">
-                <div>
-                  <h2 className="text-xl font-black text-slate-900 flex items-center gap-2">
-                    <Compass className="h-5 w-5 text-emerald-500" />
-                    Viajes con salida próximamente
-                  </h2>
-                  <p className="text-xs text-slate-500 mt-1">
-                    Mostrando destinos disponibles ordenados por fecha de salida más cercana.
-                  </p>
-                </div>
+            {hasActiveFilters ? (
+              /* FILTERED GRID VIEW */
+              <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-8 pb-24">
+                <div className="flex flex-col gap-3.5 border-b border-slate-100 pb-5 md:flex-row md:items-center md:justify-between">
+                  <div>
+                    <h2 className="flex items-center gap-2 text-lg font-black text-slate-900 sm:text-xl">
+                      <Compass className="h-5 w-5 text-emerald-500" />
+                      Resultados de tu búsqueda
+                    </h2>
+                    <p className="mt-1 text-xs text-slate-500">
+                      {filteredTrips.length} {filteredTrips.length === 1 ? 'viaje encontrado' : 'viajes encontrados'}.
+                    </p>
+                  </div>
 
-                {(departureCity || selectedCategory || searchQuery) && (
                   <button
                     onClick={handleResetFilters}
-                    className="inline-flex items-center gap-1 text-xs font-bold text-emerald-600 bg-emerald-50 border border-emerald-100 px-3 py-1.5 rounded-xl hover:bg-emerald-100/50 transition self-start"
+                    className="inline-flex items-center gap-1 self-start rounded-xl border border-emerald-100 bg-emerald-50 px-3 py-1.5 text-xs font-bold text-emerald-600 transition hover:bg-emerald-100/50"
                   >
                     <RefreshCw className="h-3.5 w-3.5 shrink-0" />
                     Limpiar Filtros
                   </button>
+                </div>
+
+                {filteredTrips.length > 0 ? (
+                  <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                    {filteredTrips.map((trip) => (
+                      <TripCard key={trip.id} trip={trip} onClick={() => setSelectedTrip(trip)} />
+                    ))}
+                  </div>
+                ) : (
+                  <div className="mx-auto mt-12 max-w-md rounded-3xl border border-dashed border-slate-200 bg-white p-12 text-center">
+                    <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-50 text-slate-400">
+                      🔍
+                    </div>
+                    <h3 className="mt-5 text-base font-extrabold text-slate-900">No encontramos salidas</h3>
+                    <p className="mt-2 text-sm leading-relaxed text-slate-500">
+                      No hay viajes que coincidan con tus filtros actuales. Intenta cambiar de ciudad o ampliar tu búsqueda.
+                    </p>
+                    <button
+                      onClick={handleResetFilters}
+                      className="mt-6 inline-flex rounded-xl bg-emerald-600 px-5 py-2.5 text-xs font-bold text-white shadow-md shadow-emerald-50 transition hover:bg-emerald-700"
+                    >
+                      Mostrar todos los viajes
+                    </button>
+                  </div>
                 )}
               </div>
+            ) : (
+              /* SECTIONS VIEW */
+              <div className="space-y-10 pt-8 pb-24">
+                <TripSection
+                  title="Salidas más próximas"
+                  subtitle="Reserva rápido, estos viajes salen muy pronto."
+                  emoji="🔥"
+                  trips={upcomingTrips}
+                  onSelectTrip={setSelectedTrip}
+                />
 
-              {filteredTrips.length > 0 ? (
-                <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                  {filteredTrips.map((trip) => (
-                    <TripCard
-                      key={trip.id}
-                      trip={trip}
-                      onClick={() => setSelectedTrip(trip)}
-                    />
-                  ))}
-                </div>
-              ) : (
-                <div className="mt-12 rounded-3xl border border-dashed border-slate-200 bg-white p-12 text-center max-w-md mx-auto">
-                  <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-50 text-slate-400">
-                    🔍
-                  </div>
-                  <h3 className="mt-5 text-base font-extrabold text-slate-900">No encontramos salidas</h3>
-                  <p className="mt-2 text-sm text-slate-500 leading-relaxed">
-                    No hay viajes programados que coincidan con tus filtros actuales. Intenta cambiar de ciudad de salida o ampliar tu búsqueda.
-                  </p>
-                  <button
-                    onClick={handleResetFilters}
-                    className="mt-6 inline-flex rounded-xl bg-emerald-600 px-5 py-2.5 text-xs font-bold text-white shadow-md shadow-emerald-50 transition hover:bg-emerald-700"
-                  >
-                    Mostrar todos los viajes
-                  </button>
-                </div>
-              )}
-            </div>
+                {categorySections.map((section) => (
+                  <TripSection
+                    key={section.category}
+                    title={section.title}
+                    subtitle={section.subtitle}
+                    emoji={section.emoji}
+                    trips={section.trips}
+                    onSelectTrip={setSelectedTrip}
+                  />
+                ))}
+              </div>
+            )}
           </div>
         )}
       </main>
