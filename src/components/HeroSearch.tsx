@@ -126,45 +126,7 @@ export default function HeroSearch({
           </div>
         </div>
 
-        {/* Core Value Proposition Cards (Trust Badges) */}
-        <div className="mx-auto mt-16 max-w-5xl">
-          <div className="grid gap-6 sm:grid-cols-3">
-            <div className="flex gap-4 rounded-2xl border border-slate-800/60 bg-slate-900/30 p-5 backdrop-blur-sm">
-              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-red-500/10 text-red-400">
-                <ShieldAlert className="h-6 w-6" />
-              </div>
-              <div>
-                <h3 className="font-bold text-white text-base">Cero Estafas</h3>
-                <p className="mt-1 text-sm text-slate-400 leading-relaxed">
-                  Verificamos legal y comercialmente a cada agencia antes de subir un solo viaje. Tu dinero está seguro.
-                </p>
-              </div>
-            </div>
 
-            <div className="flex gap-4 rounded-2xl border border-slate-800/60 bg-slate-900/30 p-5 backdrop-blur-sm">
-              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-400">
-                <BadgeCheck className="h-6 w-6" />
-              </div>
-              <div>
-                <h3 className="font-bold text-white text-base">Asientos Transparentes</h3>
-                <p className="mt-1 text-sm text-slate-400 leading-relaxed">
-                  Mira en tiempo real la disponibilidad y selecciona tus asientos exactos en el mapa de autobús antes de irte.
-                </p>
-              </div>
-            </div>
-
-            <div className="flex gap-4 rounded-2xl border border-slate-800/60 bg-slate-900/30 p-5 backdrop-blur-sm">
-              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-teal-500/10 text-teal-400">
-                <MessageSquareHeart className="h-6 w-6" />
-              </div>
-              <div>
-                <h3 className="font-bold text-white text-base">Trato Personalizado</h3>
-                <p className="mt-1 text-sm text-slate-400 leading-relaxed">
-                  ¿Dudas? Chatea en un clic con un operador para coordinar cómodamente tus pagos o resolver preguntas.
-                </p>
-              </div>
-            </div>
-          </div>
         </div>
       </div>
     </div>
