@@ -32,15 +32,8 @@ export default function HeroSearch({
         {/* Main Content */}
         <div className="text-center">
           <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/10 px-4 py-1.5 text-xs font-semibold text-emerald-400 backdrop-blur-md">
-            🚀 Evita estafas en internet • Catálogo Curado y Verificado
+            🚀 Encuentra viajes, tours y escapadas de fin de semana con salida desde tu ciudad
           </span>
-          <h1 className="mt-6 text-4xl font-extrabold tracking-tight text-white sm:text-5xl lg:text-6xl">
-            Viaja tranquilo, <span className="text-emerald-400">Agencias verificadas </span>,<br className="hidden sm:inline" />
-             precios reales, <span className="underline decoration-emerald-400 decoration-wavy underline-offset-8">lugares garantizados.</span>.
-          </h1>
-          <p className="mx-auto mt-6 max-w-2xl text-lg text-slate-300">
-            Encuentra viajes, tours y escapadas de fin de semana con salida desde tu ciudad de origen. Reserva con confianza y coordina directo con operadores verificados.
-          </p>
         </div>
 
         {/* Search Engine / Filter bar (Trivago Style) */}
